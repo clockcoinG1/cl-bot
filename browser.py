@@ -1,16 +1,25 @@
+import logging
+import re
 import threading
 import time
-
+from pyparsing import Optional
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import ElementNotVisibleException, TimeoutException
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
+from aicaptcha import AiCaptcha
+
+user_agent = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+)
+solver = AiCaptcha("a433a493-bc2c-41a7-baab-fb898442d2ed")
 
 
 class CraigslistBrowser:
     OPTIONS = Options()
-    # OPTIONS.add_argument("--headless")
+    OPTIONS.add_argument("--headless")
     OPTIONS.add_argument("--no-sandbox")
     OPTIONS.add_argument("--disable-gpu")
     OPTIONS.add_argument("--disable-infobars")
@@ -28,6 +37,12 @@ class CraigslistBrowser:
         cls.DRIVER = webdriver.Chrome(
             executable_path="/opt/homebrew/bin/chromedriver", chrome_options=cls.OPTIONS
         )
+
+    @classmethod
+    def get_driver(cls):
+        if not cls.DRIVER:
+            cls.set_driver()
+        return cls.DRIVER
 
     @classmethod
     def visit(cls, url):
